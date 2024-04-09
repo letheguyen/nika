@@ -1,0 +1,135 @@
+import { isNil } from 'lodash'
+import { toast } from 'react-toastify'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup/dist/yup.js'
+
+import {
+  API_URLS,
+  MODAL_KEYS,
+  SOCKET_KEYS,
+  typeImageNftAllowed,
+} from '@/constants'
+import { https } from '@/services'
+import { appStore } from '@/stores/app'
+import { schemaCreateBlog } from '@/schema'
+import { socketStore } from '@/stores/socket'
+import PreviewImages from '@/components/previewImages'
+import React, { memo, useCallback, useEffect } from 'react'
+import { uploadMultipleFile, uploadSingleFile } from '@/utils'
+import { HttpsResponse, IDataDetailBlog, IFormCreateBlog } from '@/interfaces'
+
+const EditBlog = () => {
+  const { emitEvent } = socketStore()
+  const { closeModal, modalEvent, modalData } = appStore()
+
+  const {
+    watch,
+    register,
+    setValue,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<IFormCreateBlog>({
+    resolver: yupResolver(schemaCreateBlog),
+  })
+
+  const submitEvent = async (formData: IFormCreateBlog) => {
+    if (isNil(modalData)) return
+    const { blogId } = modalData
+    const { files, description } = formData
+    const images = [
+      'https://relipashop.s3.ap-southeast-1.amazonaws.com/blogs/ada95022-2c4e-44a0-b640-bcc51cd3d914',
+      'https://relipashop.s3.ap-southeast-1.amazonaws.com/blogs/2cff3d6e-beaa-434c-a0f9-1d8aeb1b2769',
+    ]
+
+    const dataUpdate = {
+      description,
+      images,
+    }
+
+    const response = await https.put(API_URLS.blog+blogId, dataUpdate) as HttpsResponse<any>
+    if (response.isSuccess) {
+      modalEvent?.()
+      toast.success("Cập nhật thành công")
+      closeModal()
+    } else {
+      toast.success("Có lỗi sảy ra")
+    }
+  }
+
+  const getDetailBlog = useCallback(async () => {
+    if (isNil(modalData)) return
+    const { blogId } = modalData
+    const { data, isSuccess } = (await https.get(
+      API_URLS.blog + blogId
+    )) as HttpsResponse<IDataDetailBlog>
+    if (isNil(isSuccess)) return toast.error('Lỗi khi lấy thông tin blog')
+    setValue('files', data.images)
+    setValue('description', data.description)
+  }, [modalData])
+
+  useEffect(() => {
+    getDetailBlog()
+  }, [getDetailBlog])
+
+  const files = watch('files')
+
+  return (
+    <div className="min-w-[1100px] max-w-[1100px]">
+      <h2 className="text-xl uppercase text-center font-bold opacity-95">
+        Chỉnh sửa bài viết
+      </h2>
+
+      <form
+        onSubmit={handleSubmit(submitEvent)}
+        className="max-h-[85vh] overflow-y-auto"
+      >
+        <div className="mt-4 flex flex-col justify-center items-center">
+          <label htmlFor="email" className="flex mr-auto">
+            Nội dung bài viết
+            <span className="text-red-600 block ml-1">*</span>
+          </label>
+
+          <textarea
+            rows={5}
+            id="email"
+            {...register('description')}
+            placeholder="Nhập nội dung bài viết của bạn..."
+            className="border px-3 py-0.5 leading-6 font-light outline-none rounded-lg w-full max-sm:w-full max-sm:min-w-0"
+          />
+
+          <span className="text-red-600 mr-auto">
+            {errors.description?.message}
+          </span>
+        </div>
+
+        <div className="mt-4 flex flex-col justify-center items-center">
+          <label htmlFor="file" className="flex mr-auto">
+            Hình ảnh
+            <span className="text-red-600 block ml-1">*</span>
+          </label>
+
+          <input
+            id="file"
+            type="file"
+            multiple
+            className="mr-auto"
+            {...register('files')}
+            accept={typeImageNftAllowed.join(',')}
+          />
+          <span className="text-red-600 mr-auto">{errors.files?.message}</span>
+        </div>
+
+        <PreviewImages files={files} />
+
+        <button
+          type="submit"
+          className="border rounded-md min-w-24 mt-5 animation-btn py-2 opacity-90 hover:opacity-100 bg-black text-pink-400 font-bold"
+        >
+          Cập nhật
+        </button>
+      </form>
+    </div>
+  )
+}
+
+export default memo(EditBlog)

@@ -1,0 +1,11 @@
+yarn.lock
+package.json
+public/dictionary
+*.config.js
+
+node_modules
+**/.next/**
+**/_next/**
+**/dist/**
+**/__tmp__/**
+.github
