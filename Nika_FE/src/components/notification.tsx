@@ -1,5 +1,6 @@
 'use client'
 
+import clsx from 'clsx'
 import Link from 'next/link'
 import { isEmpty, isNil } from 'lodash'
 import { socketStore } from '@/stores/socket'
@@ -12,6 +13,7 @@ import {
   NotificationType,
   INotificationData,
   INotificationResponse,
+  NotificationStatus,
 } from '@/interfaces'
 import Nodata from './nodata'
 import Paginate from './paginate'
@@ -20,9 +22,10 @@ import { API_URLS, USER_PATHS } from '@/constants'
 
 const Notification = () => {
   const searchParams = useSearchParams()
-  const { setSocketEvent } = socketStore()
   const [pagination, setPagination] = useState<IPagination>()
+  const { setSocketEvent, fetchCountNotification } = socketStore()
   const [dataNotification, setDataNotification] = useState<INotificationData[]>()
+  const [watchedData, setWatchedData] = useState<{[notificationId: string]: string}>({})
   const pageIndex = searchParams.get('pageIndex') ?? 1
 
   const NOTIFICATION_TITLE = {
@@ -37,33 +40,39 @@ const Notification = () => {
     const { isSuccess, data } = (await https.get(API_URLS.notification, {
       params: {
         pageIndex,
-        pageSize: 30,
+        pageSize: 3,
       },
     })) as HttpsResponse<INotificationResponse>
 
     if (isSuccess) {
-      setDataNotification(data.data)
       setPagination(data)
+      setDataNotification(data.data)
+      setWatchedData(data.notificationsWatched)
     }
   }, [pageIndex])
+
+  const viewAll = useCallback(async () => {
+    ;(await https.put(API_URLS.notification)) as HttpsResponse<any>
+    getNotifications()
+    fetchCountNotification?.()
+  }, [fetchCountNotification, getNotifications])
 
   useEffect(() => {
     getNotifications()
     setSocketEvent({ fetchNotification: getNotifications })
   }, [getNotifications])
 
-  if (isNil(dataNotification) || isEmpty(dataNotification)) {
-    return <Nodata />
-  }
+  if (isNil(dataNotification) || isEmpty(dataNotification)) return <Nodata />
 
   return (
     <div className="max-w-7xl w-full py-3 flex flex-col gap-3">
       {dataNotification.map((notification) => (
         <Link
-          href={
-            NOTIFICATION_HREF[notification.type] + '/' + notification.hrefId
-          }
-          className="block pb-1 border-b hover:bg-slate-200 p-3"
+          href={ NOTIFICATION_HREF[notification.type] + '/' + notification.hrefId}
+          className={clsx(
+            'block pb-1 border-b hover:bg-slate-200 p-3',
+            watchedData[notification._id] ? 'opacity-45' : '',
+          )}
           key={notification._id}
         >
           <p className="font-bold">{NOTIFICATION_TITLE[notification.type]}</p>
@@ -72,6 +81,17 @@ const Notification = () => {
           </p>
         </Link>
       ))}
+
+      <div className="flex text-center py-2 mt-3">
+        <div
+          onClick={viewAll}
+          className="flex gap-3 justify-center items-center  hover:bg-slate-100 px-4 py-2 opacity-70 hover:opacity-100"
+        >
+          <label className="hover:cursor-pointer" htmlFor="check">
+            Đánh dấu đã đọc tất cả
+          </label>
+        </div>
+      </div>
 
       <Paginate data={pagination} />
     </div>

@@ -3,7 +3,7 @@ import { IOwnerData } from "./notification"
 export interface IBLogsData {
   _id: string
   images: string[]
-  ownerId:  IOwnerData
+  owner:  IOwnerData
   createdAt:  string
   updatedAt: string
   description: string

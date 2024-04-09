@@ -14,16 +14,16 @@ interface IEventData extends Events {
 }
 interface Events {
   fetchBlog?: () => void
-  fetchCountBlog?: () => void
   fetchNotification?: () => void
+  fetchCountNotification?: () => void
 }
 
 export const socketStore = create<ISocketStore>()((set) => ({
   data: undefined,
 
   fetchBlog: undefined,
-  fetchCountBlog: undefined,
   fetchNotification: undefined,
+  fetchCountNotification: undefined,
 
   actionKey: undefined,
   emitEvent: (data) => {

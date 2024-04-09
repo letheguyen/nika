@@ -84,7 +84,7 @@ const Blog = () => {
             scope="row"
             className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
           >
-            {blog.ownerId.email ?? blog.ownerId.userName}
+            {blog.owner.email ?? blog.owner.userName}
           </th>
           <td className="px-6 py-4 min-w-80">
             <textarea

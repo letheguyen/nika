@@ -25,6 +25,8 @@ export class MyGateway implements OnModuleInit, OnGatewayDisconnect {
   private async onConnection(userId: string | string[]) {
     try {
       if (isNil(userId)) return;
+      if (this.users && this.users[String(userId)]) return;
+
       const user = await this.userService.findOne({ _id: userId.toString() });
       const newUser = { [user._id.toString()]: user.role };
       this.users = { ...this.users, ...newUser };

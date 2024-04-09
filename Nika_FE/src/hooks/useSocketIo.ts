@@ -16,7 +16,7 @@ export const useSocketIo = () => {
     actionKey,
     emitEvent,
     fetchBlog,
-    fetchCountBlog,
+    fetchCountNotification,
     fetchNotification
   } = socketStore()
   const { user, accessToken } = userStore()
@@ -46,11 +46,11 @@ export const useSocketIo = () => {
 
     socketClient.on(globalEventName.blogEvent, () => {
       fetchBlog?.()
-      fetchCountBlog?.()
+      fetchCountNotification?.()
       fetchNotification?.()
     })
     
-  }, [socketClient, fetchCountBlog, fetchBlog])
+  }, [socketClient, fetchCountNotification, fetchBlog])
 
   useEffect(() => {
     const url = process.env.NEXT_PUBLIC_SOCKET_URL

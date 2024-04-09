@@ -3,15 +3,14 @@ import { ClientSession } from 'mongoose';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 
+import { Common } from '@/constant';
 import { BaseService } from 'module/base.service';
 import { Blog, BlogDocument } from '@/models/blog';
 import { MyGateway } from 'module/gateway/gateway';
 import { ICreateBlog, IGetBlogs } from './blog.dto';
 import { globalEventName } from 'module/gateway/contant';
 import { NotificationType } from 'module/notification/contant';
-import { UserService } from 'module/user/services/user.service';
 import { Notification, NotificationDocument } from '@/models/notification';
-import { Common } from '@/constant';
 
 @Injectable()
 export class BlogService extends BaseService<BlogDocument> {
@@ -20,7 +19,6 @@ export class BlogService extends BaseService<BlogDocument> {
     private readonly blogModel: Model<BlogDocument>,
     @InjectModel(Notification.name)
     private readonly notificationModel: Model<NotificationDocument>,
-    private readonly userService: UserService,
     private readonly myGateway: MyGateway,
   ) {
     super(blogModel);
@@ -28,8 +26,12 @@ export class BlogService extends BaseService<BlogDocument> {
 
   async createBlog(ownerId: string, data: ICreateBlog): Promise<any> {
     return await this.usingTransaction(async (session: ClientSession) => {
-      const dataCreateBlog = { ownerId, ...data };
-      const dataCreateNotification = { ownerId, type: NotificationType.blog, content: data.description };
+      const dataCreateBlog = { owner: ownerId, ...data };
+      const dataCreateNotification = {
+        owner: ownerId,
+        content: data.description,
+        type: NotificationType.blog,
+      };
 
       const blog = await this.blogModel.create([dataCreateBlog], {
         session,
@@ -53,7 +55,7 @@ export class BlogService extends BaseService<BlogDocument> {
         .skip((Number(pageIndex) - 1) * Number(pageSize))
         .limit(Number(pageSize))
         .populate({ 
-          path: 'ownerId', 
+          path: 'owner', 
           select: 'userName email avatarUrl',
         })
         .lean(),

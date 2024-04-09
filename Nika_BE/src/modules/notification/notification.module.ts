@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationService } from './notification.service';
 import { NotificationController } from './notification.controller';
 import { Notification, NotificationSchema } from '@/models/notification';
-import { User, UserSchema } from '@/models/user';
+import { WatchedNotification, WatchedNotificationSchema } from '@/models/watchedNotification';
 
 @Module({
   imports: [
@@ -14,9 +14,9 @@ import { User, UserSchema } from '@/models/user';
         schema: NotificationSchema,
       },
       {
-        name: User.name,
-        schema: UserSchema,
-      },
+        name: WatchedNotification.name,
+        schema: WatchedNotificationSchema,
+      }
     ]),
   ],
   controllers: [NotificationController],

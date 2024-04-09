@@ -12,7 +12,7 @@ export class Blog {
   images: string[];
 
   @Prop({ type: 'ObjectId', ref: 'User'})
-  ownerId: string
+  owner: string
 }
 
 export type BlogDocument = Blog & Document;

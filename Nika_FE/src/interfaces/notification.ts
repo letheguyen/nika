@@ -21,7 +21,7 @@ export interface INotificationData {
   to: string
   content: string
   isGlobal: boolean
-  ownerId: IOwnerData
+  owner: IOwnerData
   type: ValueOf<typeof NotificationType>
   status: ValueOf<typeof NotificationStatus>
   createdAt: string
@@ -30,4 +30,6 @@ export interface INotificationData {
   __v: 0
 }
 
-export interface INotificationResponse extends IPageData<INotificationData[]> {}
+export interface INotificationResponse extends IPageData<INotificationData[]> {
+  notificationsWatched: {[notificationId: string]: string}
+}

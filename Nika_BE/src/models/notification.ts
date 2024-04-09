@@ -11,8 +11,8 @@ export class Notification {
   @Prop({})
   content: string;
 
-  @Prop({ type: 'ObjectId', ref: 'User'})
-  ownerId: string;
+  @Prop({ type: 'ObjectId', ref: 'User' })
+  owner: string;
 
   @Prop({ default: true })
   isGlobal: boolean;
@@ -22,9 +22,6 @@ export class Notification {
 
   @Prop({ default: '' })
   hrefId: string;
-  
-  @Prop({ default: NotificationStatus.NotSeen })
-  status: NotificationStatus;
 }
 
 export type NotificationDocument = Notification & Document;

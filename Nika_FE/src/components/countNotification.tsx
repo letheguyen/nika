@@ -19,7 +19,7 @@ const CountNotification = () => {
 
   useEffect(() => {
     getTotalNotification()
-    setSocketEvent({fetchCountBlog: getTotalNotification})
+    setSocketEvent({fetchCountNotification: getTotalNotification})
   }, [])
 
   if (count) {

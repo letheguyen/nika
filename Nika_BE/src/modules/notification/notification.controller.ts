@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, UseGuards } from "@nestjs/common";
+import { Controller, Get, Put, Query, Req, UseGuards } from "@nestjs/common";
 
 import { NotificationService } from "./notification.service";
 import { JwtAuthGuard } from "@/guards/jwt-auth.guard";
@@ -22,5 +22,12 @@ export class NotificationController {
   async getNotificationByUser(@Req() request: any, @Query() query: IQueryGetNotificationsDto) {
     const currentUser = request.user;
     return this.notificationService.getNotificationsByUser(currentUser, query);
+  }
+
+  @Put()
+  @UseGuards(JwtAuthGuard, RolesGuard(Role.Admin, Role.User)) 
+  async viewAllNotification(@Req() request: any) {
+    const currentUser = request.user;
+    return this.notificationService.viewAllNotification(currentUser);
   }
 }
